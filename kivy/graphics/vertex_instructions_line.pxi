@@ -15,6 +15,7 @@ DEF LINE_MODE_ROUNDED_RECTANGLE = 4
 DEF LINE_MODE_BEZIER = 5
 
 from kivy.graphics.stencil_instructions cimport StencilUse, StencilUnUse, StencilPush, StencilPop
+from collections.abc import Iterable
 import itertools
 
 cdef float PI = 3.1415926535
@@ -134,6 +135,9 @@ cdef class Line(VertexInstruction):
         super(Line, self).__init__(**kwargs)
         v = kwargs.get('points')
         self.points = v if v is not None else []
+        if len(filter(lambda x: not isinstance(x,Iterable),self.points)) > 0: # if there are more than 0 items that are not iterables (e.g. tuples)
+            raise ValueError("Points provided in Line() must be an Iterable (e.g.) tuple, not {}".format(  str([i.__class__.__name__ for i in list(filter(lambda x: not isinstance(x,Iterable),self.points))])))
+
         self.dashes = kwargs.get('dashes', [])
         self.batch.set_mode('line_strip')
         self._dash_length = kwargs.get('dash_length') or 1
